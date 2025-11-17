@@ -1,0 +1,177 @@
+# General
+
+- This is a Next.js 14 App Router project written in strict TypeScript; never add plain `.js` files or disable strictness.
+- Use `pnpm` for every script (`pnpm dev`, `pnpm test`, etc.) and keep `package.json` scripts in sync when tooling changes.
+- Keep imports using the `@/*` alias defined in `tsconfig.json`; avoid long relative paths.
+- Favor server components by default; only add `'use client'` to files that rely on browser APIs, hooks, or context.
+- Stick to controlled, config-driven UI: most copy, colors, and toggles must flow from `app.config.json` via `getConfig()`.
+
+# Styling / UI
+
+- UI is built with MUI v5 + Emotion; use the `sx` prop or Emotion styling helpers instead of ad-hoc CSS files.
+- Theme colors come from `AppThemeProvider` (which reads `config.brand.primaryColor`) and respect light/dark/system via `useThemeMode`; do not bypass this provider.
+- Global layout already wraps pages with `Providers`, `AppThemeProvider`, `ToastProvider`, and `ErrorBoundary` (`src/app/layout.tsx`); add new providers there only if the entire app requires them.
+- `src/app/globals.css` is only for resets and global browser quirks. All component styling belongs in MUI `sx`, `styled`, or Emotion helpers so it can react to theme tokens.
+- Prefer layout primitives (`Box`, `Stack`, `Grid`) over raw HTML elements so spacing and responsive props stay declarative.
+- Reuse shared primitives (`PageHeader`, `EmptyState`, etc.) to maintain consistent spacing, typography, and messaging across the app.
+
+# MUI vs Custom CSS Guidelines
+
+- **Always prefer MUI components and `sx` prop** for styling. MUI components are theme-aware, accessible, and responsive by default.
+- **Use `sx` prop** for component-level styles that need theme access: `sx={{ color: 'primary.main', p: 2 }}`
+- **Use `styled()` from `@emotion/styled`** only when creating reusable styled components that need theme access: `const StyledCard = styled(Card)(({ theme }) => ({ ... }))`
+- **Use `useTheme()` hook** when you need theme values in component logic (not just styling).
+- **Avoid custom CSS files** (`*.css`, `*.module.css`) except for:
+  - Global resets in `src/app/globals.css`
+  - Third-party library overrides that can't be done via MUI
+  - Critical CSS for performance (rare)
+- **Never use inline `style` prop** for theme-dependent values; use `sx` instead.
+- **Never hardcode colors** (hex, rgb, etc.) unless they come from `config.brand.primaryColor` or are truly brand-specific constants.
+- **Use MUI theme palette** for all colors: `theme.palette.primary.main`, `theme.palette.text.secondary`, `theme.palette.error.main`, etc.
+- **Use MUI spacing system** (`theme.spacing()` or shorthand like `sx={{ p: 2, m: 1 }}`) instead of pixel values.
+- **Use MUI breakpoints** for responsive design: `sx={{ width: { xs: '100%', md: '50%' } }}`
+
+# HTML / Accessibility
+
+- Favor semantic elements by either using native tags (`main`, `nav`, `footer`) or setting the `component` prop on MUI primitives (e.g., `<Typography component="h1">`) so the DOM keeps correct heading hierarchy.
+- Always provide accessible names: buttons require clear text, icons need `aria-label`s, and images should have descriptive `alt` text (see `Navbar` logo usage).
+- Keep headings sequential and unique per page; do not skip directly from `h1` to `h3`.
+- Interactive regions must have focus styles (MUI supplies these by default—do not remove them).
+- Ensure empty states, loading states, and error states render distinct content for screen readers; avoid showing blank containers while data loads.
+
+# Inline Styling Guidelines
+
+- Avoid the raw `style` prop for new code; use `sx` so values can reference the theme (`({ palette }) => ({ color: palette.primary.main })`).
+- When creating reusable style objects, extract them to constants (e.g., `const cardSx = { ... }`) and spread them into `sx` to prevent duplication.
+- Keep `sx` objects flat and short; compose via arrays or helper constants when styles grow beyond ~8 props.
+- Never embed hex colors directly in components unless they originate from the config or MUI palette—use `theme.palette` references instead.
+
+# UI/UX Patterns
+
+- Display loading indicators (`LoadingSkeleton`, spinners) while async data resolves; never show partially-hydrated layouts without feedback.
+- All user-triggered actions should respond with toasts or inline messaging on success/failure by calling `useToast()` or reusing `InlineError`.
+- Destructive actions require confirmation UI (secondary click, dialog, or at least `color="error"` plus descriptive copy).
+- Keep spacing consistent: section paddings usually use `sx={{ py: 4 }}`; follow existing rhythm unless a design change is intentional.
+- Buttons in a row should share width logic (`fullWidth`, `flex`, or fixed) so layouts remain responsive.
+
+# Naming Conventions
+
+## Files and Directories
+
+- **Components**: PascalCase (`Navbar.tsx`, `LoginForm.tsx`, `ErrorPage.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useThemeMode.ts`, `useToast.ts`)
+- **Utilities/Lib**: camelCase (`api.ts`, `config.ts`, `auth-mock.ts`)
+- **Contexts**: PascalCase with `Context` suffix (`ThemeContext.tsx`)
+- **Pages**: Next.js route structure (lowercase, kebab-case for multi-word: `login/page.tsx`, `protected/dashboard/page.tsx`)
+- **API Routes**: lowercase (`health/route.ts`, `echo/route.ts`)
+- **Test Files**: Mirror source path with `.test.tsx` or `.test.ts` (`src/tests/login.test.tsx`)
+
+## Code Naming
+
+- **Components**: PascalCase (`const Navbar = () => { ... }`)
+- **Hooks**: camelCase with `use` prefix (`const useThemeMode = () => { ... }`)
+- **Functions**: camelCase (`const getConfig = () => { ... }`)
+- **Constants**: UPPER_SNAKE_CASE for true constants (`const THEME_STORAGE_KEY = 'theme-mode'`), camelCase for config objects
+- **Types/Interfaces**: PascalCase (`interface AppConfig { ... }`, `type ThemeMode = ...`)
+- **Props Interfaces**: PascalCase with `Props` suffix (`interface NavbarProps { ... }`)
+- **Context Types**: PascalCase with `Type` suffix (`interface ThemeContextType { ... }`)
+- **Zod Schemas**: camelCase with `Schema` suffix (`const loginSchema = z.object({ ... })`)
+- **CSS Classes**: kebab-case (rarely used, scoped via Emotion)
+- **Context Providers**: PascalCase with `Provider` suffix (`ThemeProvider`, `ToastProvider`)
+- **Exported Hooks from Context**: camelCase with `use` prefix (`useThemeMode`, `useToast`)
+
+## Variable Naming
+
+- **Boolean variables**: Prefix with `is`, `has`, `should`, `can` (`isAuthenticated`, `hasError`, `shouldShowFooter`)
+- **Event handlers**: Prefix with `handle` (`handleSubmit`, `handleClick`)
+- **Toggle functions**: Prefix with `toggle` or use verb (`toggleTheme`, `setThemeMode`)
+- **API/data fetching**: Use descriptive names (`fetchUserData`, `getHealthStatus`)
+
+# Data & State
+
+- Client-side fetching should go through TanStack Query using the shared `createQueryClient()` defaults (`retry` only on 5xx, 5‑minute `staleTime`, no window refetch). Do not instantiate extra `QueryClient`s outside `src/components/Providers.tsx`.
+- For fetch calls outside React Query, prefer the `api()` helper in `src/lib/api.ts` so responses stay Zod-validated and errors throw `ApiError`.
+- Forms should use `useZodForm()` and `getFieldError()` from `src/lib/form.ts`; avoid duplicating validation logic.
+- Toasts should be raised through `useToast()` / `ToastProvider`; no bespoke Snackbar instances.
+
+# Configuration & Environment
+
+- `app.config.json` is the single source of truth for branding, UI flags, and metadata. Whenever you change its shape, update the Zod schema + `AppConfig` type in `src/lib/config.ts`, regenerate any dependent components, and keep JSON keys in alphabetical order per section.
+- Never import `app.config.json` directly inside client components; always call `getConfig()` so schema validation and caching stay centralized.
+- Add new environment variables by extending `envSchema` in `src/lib/env.ts`, updating related documentation, and referencing them through the exported `env`.
+
+# Routing & Pages (`src/app`)
+
+- Follow Next.js route structure. Keep protected pages under `/protected` so middleware + guards can target them.
+- Example pages are under `/examples` for demonstration purposes.
+- Prefer server components for new routes; sprinkle `use client` only when you need hooks, browser APIs, or context consumers.
+- For metadata, use `generateMetadata()` in `src/lib/seo.ts` or extend it there so `metadata` exports stay declarative.
+- Global error and not-found states are implemented via `src/components/ErrorPage.tsx` and `src/components/NotFoundPage.tsx`; new error UIs should reuse these components instead of rewriting markup inside route files.
+- API routes under `src/app/api/*` must validate input with Zod and return typed responses via `NextResponse`, similar to `api/echo/route.ts`.
+
+# Auth & Middleware
+
+- Authentication is presently mock-based (`src/lib/auth-mock.ts`). Use `RequireAuth` (`src/lib/guards.ts`) for client gating and update middleware only when `config.auth.enabled` is involved.
+- When adding real auth later, replace the mock functions but keep the same interface so existing consumers remain unchanged.
+
+# Components (`src/components`)
+
+- Components are client-first and generally MUI-based; keep them stateless/presentational when possible and inject behavior through hooks.
+- Shared UI primitives (`PageHeader`, `InlineError`, `EmptyState`, etc.) should be extended rather than recreated.
+- If a component needs app configuration or theme mode, call `getConfig()` or `useThemeMode()` internally instead of pushing that logic to every caller.
+- Error handling flows through `ErrorBoundary` → `ErrorPage`; toast messaging flows through `ToastProvider`.
+- Export components as named exports: `export function Navbar() { ... }` not `export default Navbar`.
+
+# Contexts (`src/contexts`)
+
+- Contexts should be in `src/contexts/` directory.
+- Context file naming: PascalCase with `Context` suffix (`ThemeContext.tsx`).
+- Export both the Provider component and the hook: `export function ThemeProvider() { ... }` and `export function useThemeMode() { ... }`.
+- Contexts must be client-only (use `'use client'` directive).
+
+# Hooks (`src/hooks`)
+
+- Hooks are client-only. Use them to encapsulate browser interactions (`useThemeMode`, `useToast`).
+- Any new hook that reads from storage or `window` must guard `typeof window === 'undefined'` to avoid SSR breakages, matching the existing pattern in `useThemeMode`.
+- Hooks should be in `src/hooks/` directory, not in component files.
+- Export hooks as named exports: `export function useToast() { ... }`.
+
+# Lib (`src/lib`)
+
+- Keep utilities framework-agnostic (no React imports here). Modules include config, env, auth, SEO, query client, and forms.
+- Update `createQueryClient()` defaults instead of overriding options inline where the hook is used.
+- Zod schemas go in this folder; reuse them between server/API layers and client forms whenever possible.
+- File naming: camelCase (`api.ts`, `config.ts`, `auth-mock.ts`).
+
+# Tests (`src/tests`)
+
+- Write Vitest + Testing Library tests using `renderWithProviders()` so QueryClient + Theme context are available.
+- Cleanup happens automatically in `src/tests/setup.ts`; do not duplicate setup logic inside individual test files.
+- When adding hooks or utilities, colocate unit tests under `src/tests` with descriptive filenames (e.g., `hooks/useThemeMode.test.tsx`).
+- Test file naming: Mirror source path with `.test.tsx` or `.test.ts` extension.
+
+# Assets & Public
+
+- Static assets live in `public/`; keep logos referenced by `config.brand.logoPath`.
+- Use Next `Image` component for raster assets so layout plus optimizations stay intact (see `Navbar`).
+- SVG files can be imported directly or placed in `public/` for direct URL access.
+
+# Tooling & Quality
+
+- Run `pnpm lint`, `pnpm typecheck`, and `pnpm test` before shipping meaningful changes.
+- Formatting is handled by Prettier (`pnpm format`); do not introduce other formatters.
+- Node 18.18+ is required (see `package.json`). Do not add dependencies that force lower versions.
+- Never commit console.log statements; remove debug logs before committing.
+
+# When Enabling Features
+
+- Turning on real auth requires flipping `config.auth.enabled`, wiring middleware, and ensuring all protected routes still wrap `RequireAuth`.
+- Adding new pages or API routes must update navigation (if needed) in `Navbar` and ensure error/loading states use the shared components.
+- When modifying layout structure, keep the flex column pattern in `src/app/layout.tsx` so the footer sticks to the bottom when enabled.
+
+# Code Organization
+
+- Group imports: external packages → internal components → hooks → lib → types → relative imports
+- Use absolute imports with `@/` alias for all internal imports
+- Keep component files focused; split large components into smaller, reusable pieces
+- Extract constants and types to the top of files or to separate files if reused

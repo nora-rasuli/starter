@@ -1,0 +1,45 @@
+{
+  "appName": "My App",
+  "brand": {
+    "primaryColor": "#1976d2",
+    "logoPath": "/logo.svg"
+  },
+  "auth": {
+    "enabled": true
+  },
+  "ui": {
+    "theme": "light",
+    "showFooter": true
+  },
+  "pages": {
+    "home": {
+      "hero": {
+        "title": "Welcome to {appName}",
+        "description": "{description}",
+        "ctaText": "Get Started"
+      },
+      "about": {
+        "title": "About This Project",
+        "paragraphs": [
+          "This is a modern web application starter built with Next.js, TypeScript, and Material UI. It provides a solid foundation for building production-ready applications with authentication, routing, and a beautiful UI out of the box.",
+          "The starter includes everything you need to get started quickly: authentication, protected routes, form handling, data fetching, and a comprehensive set of reusable components.",
+          "Customize the branding, colors, and content through the configuration file to make it your own."
+        ]
+      }
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue",
+      "allowGuest": false
+    },
+    "error": {
+      "title": "Something went wrong",
+      "supportEmail": "support@example.com"
+    }
+  },
+  "metadata": {
+    "title": "My App",
+    "description": "A modern web app starter.",
+    "ogImage": "/logo.svg"
+  }
+}

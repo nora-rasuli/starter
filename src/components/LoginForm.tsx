@@ -26,9 +26,11 @@ export function LoginForm({ onGuestClick }: LoginFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   })
 
   const onSubmit = async (data: LoginFormData) => {

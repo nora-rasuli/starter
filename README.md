@@ -381,10 +381,34 @@ Environment variables are validated via Zod in `src/lib/env.ts`.
 
 This starter is optimized for Vercel deployment:
 
+**Option 1: Git Integration (Recommended for CI/CD)**
 1. Push your code to GitHub
 2. Import your repository in [Vercel](https://vercel.com)
 3. Vercel will automatically detect Next.js and configure the build
 4. Deploy!
+
+**Option 2: Deploy Script**
+Run the included deploy script for pre-deployment checks and optional Vercel CLI deployment:
+
+```bash
+./deploy.sh
+```
+
+The script will:
+- Run type checking
+- Run linting
+- Run tests
+- Build the project
+- Optionally deploy to Vercel (if Vercel CLI is installed)
+
+**Option 3: Manual Vercel CLI**
+```bash
+# Install Vercel CLI globally
+npm install -g vercel
+
+# Deploy
+vercel --prod
+```
 
 The `vercel.json` file is included for additional configuration if needed.
 

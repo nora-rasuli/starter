@@ -79,19 +79,19 @@ importers:
         specifier: ^14.0.4
         version: 14.2.33(eslint@8.57.1)(typescript@5.9.3)
       eslint-config-prettier:
-        specifier: ^9.1.0
+        specifier: ^9.1.2
         version: 9.1.2(eslint@8.57.1)
       jsdom:
-        specifier: ^23.0.1
+        specifier: ^23.2.0
         version: 23.2.0
       prettier:
-        specifier: ^3.1.1
+        specifier: ^3.6.2
         version: 3.6.2
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.9.3
         version: 5.9.3
       vitest:
-        specifier: ^1.0.4
+        specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.25)(jsdom@23.2.0)
 
 packages:
